@@ -71,73 +71,73 @@ void Line_sensor_handle(){
   }
 
 
-  H_bridge_handle(handle);
-}
+//   H_bridge_handle(handle);
+// }
 
-// void LED_select(){
-//     //Array para guardar o valor do LDR
-//     int LEDvalues[4] = {0,0,0,0}; //Treshold, LED_R, LED_G, LED_B
+void LED_select(){
+    //Array para guardar o valor do LDR
+    int LEDvalues[4] = {0,0,0,0}; //Treshold, LED_R, LED_G, LED_B
     
-//     //Ler a tensão basal
-//     LEDvalues[0] = analogRead(LDR);
+    //Ler a tensão basal
+    LEDvalues[0] = analogRead(LDR);
     
-//     //Leitura do LED Vermelho
-//     digitalWrite(LED_R,HIGH);
-//     delay(10);
-//     LEDvalues[1] = analogRead(LDR);
-//     digitalWrite(LED_R,LOW);
+    //Leitura do LED Vermelho
+    digitalWrite(LED_R,HIGH);
+    delay(10);
+    LEDvalues[1] = analogRead(LDR);
+    digitalWrite(LED_R,LOW);
 
-//     //Leitura do LED Vermelho
-//     digitalWrite(LED_G,HIGH);
-//     delay(10);
-//     LEDvalues[2] = analogRead(LDR);
-//     digitalWrite(LED_G,LOW);
+    //Leitura do LED Vermelho
+    digitalWrite(LED_G,HIGH);
+    delay(10);
+    LEDvalues[2] = analogRead(LDR);
+    digitalWrite(LED_G,LOW);
     
-//     //Leitura do LED Vermelho
-//     digitalWrite(LED_B,HIGH);
-//     delay(10);
-//     LEDvalues[3] = analogRead(LDR);
-//     digitalWrite(LED_B,LOW);
+    //Leitura do LED Vermelho
+    digitalWrite(LED_B,HIGH);
+    delay(10);
+    LEDvalues[3] = analogRead(LDR);
+    digitalWrite(LED_B,LOW);
 
-//     //Escrever na serial
-//     Serial.print("Treshold: ");
-//     Serial.println(LEDvalues[0]);
-//     Serial.print("LED Vermelho: ");
-//     Serial.println(LEDvalues[1]-LEDvalues[0]);
-//     Serial.print("LED Verde: ");
-//     Serial.println(LEDvalues[2]-LEDvalues[0]);
-//     Serial.print("LED Azul: ");
-//     Serial.println(LEDvalues[3]-LEDvalues[0]);
-//     if (LEDvalues[1]-LEDvalues[0] > 150){
-//       Serial.println("Vermelho!");
-//     }
-//     if (LEDvalues[2]-LEDvalues[0]> 200){
-//       Serial.println("Verde!");
-//     }
-//     if (LEDvalues[3]-LEDvalues[0] > 120){
-//       Serial.println("Azul!");
-//     }
-//     Serial.println("-------------------------");
-//     state = digitalRead(BURST_BTN);    
-//   } 
-//   if (digitalRead(CALIB_R) == 0){
-//     digitalWrite(LED_R,HIGH);
-//   }
-//   else{
-//     digitalWrite(LED_R,LOW);
-//   }
-//   if (digitalRead(CALIB_G) == 0){
-//     digitalWrite(LED_G,HIGH);
-//   }
-//   else{
-//     digitalWrite(LED_G,LOW);
-//   }
-//   if (digitalRead(CALIB_B) == 0){
-//     digitalWrite(LED_B,HIGH);
-//   }
-//   else{
-//     digitalWrite(LED_B,LOW);
-//   }
+    //Escrever na serial
+    Serial.print("Treshold: ");
+    Serial.println(LEDvalues[0]);
+    Serial.print("LED Vermelho: ");
+    Serial.println(LEDvalues[1]-LEDvalues[0]);
+    Serial.print("LED Verde: ");
+    Serial.println(LEDvalues[2]-LEDvalues[0]);
+    Serial.print("LED Azul: ");
+    Serial.println(LEDvalues[3]-LEDvalues[0]);
+    if (LEDvalues[1]-LEDvalues[0] > 150){
+      Serial.println("Vermelho!");
+    }
+    if (LEDvalues[2]-LEDvalues[0]> 200){
+      Serial.println("Verde!");
+    }
+    if (LEDvalues[3]-LEDvalues[0] > 120){
+      Serial.println("Azul!");
+    }
+    Serial.println("-------------------------");
+    state = digitalRead(BURST_BTN);    
+  } 
+  if (digitalRead(CALIB_R) == 0){
+    digitalWrite(LED_R,HIGH);
+  }
+  else{
+    digitalWrite(LED_R,LOW);
+  }
+  if (digitalRead(CALIB_G) == 0){
+    digitalWrite(LED_G,HIGH);
+  }
+  else{
+    digitalWrite(LED_G,LOW);
+  }
+  if (digitalRead(CALIB_B) == 0){
+    digitalWrite(LED_B,HIGH);
+  }
+  else{
+    digitalWrite(LED_B,LOW);
+  }
 
 void setup() {
   // put your setup code here, to run once:
@@ -164,4 +164,11 @@ void loop() {
   //if ((digitalRead(BURST_BTN) != state)&&(digitalRead(BURST_BTN) == LOW))
   //state = digitalRead(BURST_BTN);
   Line_sensor_handle();
+  LED_select();
+  // if (Serial.available() > 0){
+  //   String read = Serial.readStringUntil('\n');
+  //   Serial.println("ECHO: "+ read);
+  //   int HBridgeValue = read.toInt();
+  //   H_bridge_handle(HBridgeValue);
+  // }
 }
