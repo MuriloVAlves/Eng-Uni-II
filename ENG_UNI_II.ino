@@ -2,16 +2,20 @@
 #define LED_G 10
 #define LED_B 11
 #define LDR A1
-#define IN1 7
-#define IN2 6
-#define IN3 5
-#define IN4 4
+#define IN1 4
+#define IN2 5
+#define IN3 6
+#define IN4 7
 #define SNSRL 3
 #define SNSRR 2
+#define MOTOR_UPTIME 100
+#define DUTY_CYCLE  10
 
 bool state = HIGH;
+int counter = 0;
 
 void H_bridge_handle(int value){
+  if (counter == 0){
   switch(value){
     case 0: 
       //Parado
@@ -48,7 +52,26 @@ void H_bridge_handle(int value){
       digitalWrite(IN3,HIGH);
       digitalWrite(IN4,LOW);
       break;
+    }
+    //delay(MOTOR_UPTIME);
+    counter++;
   }
+  else{
+    //Parado
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    digitalWrite(IN3,LOW);
+    digitalWrite(IN4,LOW);
+    if (counter < DUTY_CYCLE){
+      counter++;
+      //Serial.println("ADD");
+    }
+    else{
+      counter = 0;
+      //Serial.println("RESET");
+    }
+  }
+  //Serial.println(counter);
 }
 
 void Line_sensor_handle(){
@@ -63,16 +86,22 @@ void Line_sensor_handle(){
   }
   else if ((digitalRead(SNSRL) == LOW)&&(digitalRead(SNSRR) == HIGH)){
     //Condição de ir para a esquerda
-    handle = 2;
+    handle = 3;
   }
   else if ((digitalRead(SNSRL) == HIGH)&&(digitalRead(SNSRR) == LOW)){
     //Condição de ir para a direita
-    handle = 3;
+    handle = 2;
   }
-
-
-//   H_bridge_handle(handle);
-// }
+  // Serial.print("Handle: ");
+  // Serial.println((handle));
+  H_bridge_handle(handle);
+}
+void Blink(){
+  digitalWrite(LED_BUILTIN,HIGH);
+  delay(200);
+  digitalWrite(LED_BUILTIN,LOW);
+  delay(200);
+}
 
 void LED_select(){
     //Array para guardar o valor do LDR
@@ -110,34 +139,44 @@ void LED_select(){
     Serial.println(LEDvalues[3]-LEDvalues[0]);
     if (LEDvalues[1]-LEDvalues[0] > 150){
       Serial.println("Vermelho!");
+      H_bridge_handle(0);
+      Blink();
     }
     if (LEDvalues[2]-LEDvalues[0]> 200){
       Serial.println("Verde!");
+      H_bridge_handle(0);
+      Blink();
+      Blink();
     }
     if (LEDvalues[3]-LEDvalues[0] > 120){
       Serial.println("Azul!");
+      H_bridge_handle(0);
+      Blink();
+      Blink();
+      Blink();
     }
     Serial.println("-------------------------");
-    state = digitalRead(BURST_BTN);    
-  } 
-  if (digitalRead(CALIB_R) == 0){
-    digitalWrite(LED_R,HIGH);
-  }
-  else{
-    digitalWrite(LED_R,LOW);
-  }
-  if (digitalRead(CALIB_G) == 0){
-    digitalWrite(LED_G,HIGH);
-  }
-  else{
-    digitalWrite(LED_G,LOW);
-  }
-  if (digitalRead(CALIB_B) == 0){
-    digitalWrite(LED_B,HIGH);
-  }
-  else{
-    digitalWrite(LED_B,LOW);
-  }
+  //   state = digitalRead(BURST_BTN);    
+  // } 
+  // if (digitalRead(CALIB_R) == 0){
+  //   digitalWrite(LED_R,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_R,LOW);
+  // }
+  // if (digitalRead(CALIB_G) == 0){
+  //   digitalWrite(LED_G,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_G,LOW);
+  // }
+  // if (digitalRead(CALIB_B) == 0){
+  //   digitalWrite(LED_B,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_B,LOW);
+  // }
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -164,7 +203,7 @@ void loop() {
   //if ((digitalRead(BURST_BTN) != state)&&(digitalRead(BURST_BTN) == LOW))
   //state = digitalRead(BURST_BTN);
   Line_sensor_handle();
-  LED_select();
+  //LED_select();
   // if (Serial.available() > 0){
   //   String read = Serial.readStringUntil('\n');
   //   Serial.println("ECHO: "+ read);
