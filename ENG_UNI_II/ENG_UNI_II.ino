@@ -6,8 +6,14 @@
 #define IN2 6
 #define IN3 5
 #define IN4 4
+#define ENA 12
+#define ENB 13
 #define SNSRL 3
 #define SNSRR 2
+#define PWM_HIGH  150
+#define PWM_LOW 0
+#define PWM_MED 80
+#define PWM_FREQ  400
 
 bool state = HIGH;
 
@@ -49,6 +55,9 @@ void H_bridge_handle(int value){
       digitalWrite(IN4,LOW);
       break;
   }
+    //Configura o PWM
+  ledcWrite(0, PWM_HIGH);
+  ledcWrite(1, PWM_HIGH);
 }
 
 void Line_sensor_handle(){
@@ -69,10 +78,8 @@ void Line_sensor_handle(){
     //Condição de ir para a direita
     handle = 3;
   }
-
-
-//   H_bridge_handle(handle);
-// }
+  H_bridge_handle(handle);
+}
 
 void LED_select(){
     //Array para guardar o valor do LDR
@@ -118,41 +125,49 @@ void LED_select(){
       Serial.println("Azul!");
     }
     Serial.println("-------------------------");
-    state = digitalRead(BURST_BTN);    
+    //state = digitalRead(BURST_BTN);    
   } 
-  if (digitalRead(CALIB_R) == 0){
-    digitalWrite(LED_R,HIGH);
-  }
-  else{
-    digitalWrite(LED_R,LOW);
-  }
-  if (digitalRead(CALIB_G) == 0){
-    digitalWrite(LED_G,HIGH);
-  }
-  else{
-    digitalWrite(LED_G,LOW);
-  }
-  if (digitalRead(CALIB_B) == 0){
-    digitalWrite(LED_B,HIGH);
-  }
-  else{
-    digitalWrite(LED_B,LOW);
-  }
-
+  // if (digitalRead(CALIB_R) == 0){
+  //   digitalWrite(LED_R,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_R,LOW);
+  // }
+  // if (digitalRead(CALIB_G) == 0){
+  //   digitalWrite(LED_G,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_G,LOW);
+  // }
+  // if (digitalRead(CALIB_B) == 0){
+  //   digitalWrite(LED_B,HIGH);
+  // }
+  // else{
+  //   digitalWrite(LED_B,LOW);
+  // }
+}
 void setup() {
   // put your setup code here, to run once:
   //Configurar as saidas
-  for(int i=4; i<=11; i++){
-    pinMode(i,OUTPUT);
-    digitalWrite(i,LOW);
-  }
+  pinMode(LED_R,OUTPUT);
+  digitalWrite(LED_R,LOW);
+  pinMode(LED_G,OUTPUT);
+  digitalWrite(LED_G,LOW);
+  pinMode(LED_B,OUTPUT);
+  digitalWrite(LED_B,LOW);
   //Configurar as entradas
   pinMode(SNSRL,INPUT);
   pinMode(SNSRR,INPUT);
+  pinMode(LDR,INPUT);
   //pinMode(BURST_BTN,INPUT_PULLUP);
   //pinMode(CALIB_R,INPUT_PULLUP);
   //pinMode(CALIB_G,INPUT_PULLUP);
   //pinMode(CALIB_B,INPUT_PULLUP);
+  //Configuracao do PWM para os motores
+  ledcAttachPin(ENA, 0);
+  ledcAttachPin(ENB, 1);
+  ledcSetup(0, PWM_FREQ, 8);
+  ledcSetup(1, PWM_FREQ, 8);
   //Configuracao da serial
   Serial.begin(9600);
   Serial.println("Starting...");
