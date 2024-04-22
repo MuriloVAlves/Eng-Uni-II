@@ -90,19 +90,19 @@ void LED_select(){
     
     //Leitura do LED Vermelho
     digitalWrite(LED_R,HIGH);
-    delay(10);
+    delay(1);
     LEDvalues[1] = analogRead(LDR);
     digitalWrite(LED_R,LOW);
 
     //Leitura do LED Vermelho
     digitalWrite(LED_G,HIGH);
-    delay(10);
+    delay(1);
     LEDvalues[2] = analogRead(LDR);
     digitalWrite(LED_G,LOW);
     
     //Leitura do LED Vermelho
     digitalWrite(LED_B,HIGH);
-    delay(10);
+    delay(1);
     LEDvalues[3] = analogRead(LDR);
     digitalWrite(LED_B,LOW);
 
