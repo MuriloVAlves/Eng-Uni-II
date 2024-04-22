@@ -162,13 +162,9 @@
 
         <script>
             var Socket;
-            var angulo = document.getElementById('anguloServo');
-            var resposta = document.getElementById('angulo');
-            resposta.innerText = angulo.value;
             var botao = document.getElementById('powerbtn');
             
             botao.addEventListener('click', powerChanged);
-            angulo.addEventListener('input', sendServo);
             
             function startWebSocket(){
                 Socket = new WebSocket('ws://'+window.location.hostname+':81/');
@@ -190,11 +186,8 @@
                             botao.value = 'Ligar';
                         break;
                 }
-                let anguloESP32 = dados[1];
-                console.log(anguloESP32);
-                angulo.value = anguloESP32;
-                resposta.innerText = angulo.value;
-
+                let handleESP32 = dados[1];
+                console.log(handleESP32);
             }
 
             function powerChanged(){
@@ -212,22 +205,20 @@
                 
             }
 
-            function sendServo(){
-                resposta.innerText = angulo.value;
-                console.log(angulo.value);
-                handleSocketSend(angulo.value);
-            }
-
             function handleSocketSend(valor){
                 Socket.send(valor);
             }
 
-
-
             window.onload = function(event){
                 startWebSocket();
             }
+            
+            function toggleCheckbox(x) {
+                let H_Bridge_Handle = 0;
+                console.log(x);
 
+                handleSocketSend(angulo.value);
+            }
 
         </script>
 
