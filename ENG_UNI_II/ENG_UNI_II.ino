@@ -1,29 +1,36 @@
-#define LED_R 80
-#define LED_G 0
-#define LED_B 0
-#define LDR A1
-#define SNSRL 3
-#define SNSRR 2
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <WebSocketsServer.h>
+
+#define LED  2
+#define LED_R 5
+#define LED_G 18
+#define LED_B 19
+#define LDR 32
+#define SNSRL 13
+#define SNSRR 12
 #define MOTOR_UPTIME 100
 #define DUTY_CYCLE  10
-#define IN1 4
-#define IN2 5
-#define IN3 6
-#define IN4 7
-#define ENA 11
-#define ENB 10
-#define SNSRL 3
-#define SNSRR 2
+#define IN1 14
+#define IN2 27
+#define IN3 25
+#define IN4 25
+#define ENA 33
+#define ENB 32
+#define SNSRL 34
+#define SNSRR 35
 #define PWM_HIGH  150
 #define PWM_LOW 50
 #define PWM_MED 80
-#define PWM_FREQ  400
+#define PWM_FREQ  980
 #define SSID_REDE  "Marcos_001"
 #define SENHA_REDE  "Segredo123"
 
 //Variaveis globais
-unsigned long agora = millis();
-unsigned int anguloServo = 90;
+int active_H_bridge = 1;
+bool autonomous_control = HIGH;
+int H_bridge_broadcast_value = 0;
 
 //Configuracoes para o WiFi
 IPAddress local_IP(192,168,1,22);
@@ -34,10 +41,7 @@ IPAddress subnet(255,255,255,0);
 WebServer server(80);
 WebSocketsServer Socket = WebSocketsServer(81);
 
-bool state = HIGH;
-int active_H_bridge = 1;
-
-static const char PROGMEM INDEX_HTML[] = R"rawliteral()rawliteral";
+static String PROGMEM INDEX_HTML = "<!DOCTYPE html> <html> <head> <title>ESP 32 CONTROL SYSTEM</title> <style type='text/CSS'> #header{ background-color: #2f4468; border-radius: 10px; padding: 5px; width: 100%; overflow: hidden; height: 20%; } .titulo{ font-family: Brush Script MT, Brush Script Std, cursive; text-align: center; font-size: 30px; /*color: #c9a959;*/ color: white; } body{ background-color: #f4f2ef; background-size: 100% 100%; overflow: hidden; } .wrapper{ width: 80%; padding: 5%; /*display: grid; grid-template-columns: 70% 30%;*/ margin: auto; } #powerbtn{ border-radius: 5px; text-shadow: 5px; border: 0px; padding-top: 10px; padding-bottom: 10px; font-size: 15px; width: 100%; height: 10em; } .OFF{ background-color: #2f4468; color: white; } .OFF:hover{ background-color: #e4850f; } .ON{ background-color: #e4850f; color: white; } .center{ display: flex; justify-content: center; align-items: center; height: 100%; /*border: 3px solid green;*/ } .slidecontainer { position: absolute; width: 100%; /* Width of the outside container */ } .slider { -webkit-appearance: none; appearance: none; width: 80%; height: 10em; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s; } .slider:hover { opacity: 1; } .slider::-webkit-slider-thumb{ -webkit-appearance: none; appearance: none; width: 20em; height: 20em; border-radius: 50%; background: #2076ac; cursor: pointer; } .spacer{ padding-top: 10%; } .angle{ display: flex; justify-content: center; align-items: center; height: 100%; padding: 2%; font-size: 20px; } .angle { height: 10em; font-size: 20px; } .button { background-color: #2f4468; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 18px; margin: 6px 3px; cursor: pointer; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: rgba(0,0,0,0); } .button:hover{ background-color: #e4850f; } .button:active{ background-color:#0dde26; } .btntable{ display: flex; justify-content: center; } </style> </head> <body> <header id='header'> <div class='titulo'> <h1>Controle</h1> </div> </header> <div class='wrapper'> <div class='center'> <input type='button' value='Ligar' id='powerbtn' class='OFF'> </div> <div class = 'spacer'></div> <div class = 'btntable'> <table> <tr><td colspan='3' align='center'><button class='button' id='fwbtn'>Forward</button></td></tr> <tr><td align='center'><button class='button' id='leftbtn'>Left</button></td><td align='center'><button class='button' id='stopbtn'>Stop</button></td><td align='center'><button class='button' id='rightbtn'>Right</button></td></tr> <tr><td colspan='3' align='center'><button class='button' id='bkwdbtn'>Backward</button></td></tr> </table> </div> </div> <footer> </footer> <script> var Socket; var botao = document.getElementById('powerbtn'); botao.addEventListener('click', powerChanged); var fwrdbtn = document.getElementById('fwbtn'); fwrdbtn.addEventListener('onmousedown',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); fwrdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var leftbtn = document.getElementById('leftbtn'); leftbtn.addEventListener('onmousedown',function(){toggleCheckbox('left');}); leftbtn.addEventListener('ontouchstart',function(){toggleCheckbox('left');}); leftbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); leftbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var stopbtn = document.getElementById('leftbtn'); stopbtn.addEventListener('onmousedown',function(){toggleCheckbox('stop');}); stopbtn.addEventListener('ontouchstart',function(){toggleCheckbox('stop');}); var rightbtn = document.getElementById('rightbtn'); rightbtn.addEventListener('onmousedown',function(){toggleCheckbox('right');}); rightbtn.addEventListener('ontouchstart',function(){toggleCheckbox('right');}); rightbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); rightbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var bkwdbtn = document.getElementById('bkwdbtn'); bkwdbtn.addEventListener('onmousedown',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); bkwdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); function startWebSocket(){ Socket = new WebSocket('ws://'+window.location.hostname+':81/'); Socket.onmessage = function(event){ processarComando(event); } } function processarComando(event) { console.log(event.data); let dados = event.data.split(';'); switch (dados[0]){ case 'Ligado': botao.className = 'ON'; botao.value = 'Desligar'; break; case 'Desligado': botao.className = 'OFF'; botao.value = 'Ligar'; break; } let handleESP32 = dados[1]; console.log(handleESP32); } function powerChanged(){ console.log(botao.value); handleSocketSend(botao.value); if(botao.value == 'Ligar'){ botao.className = 'ON'; botao.value = 'Desligar'; } else{ botao.className = 'OFF'; botao.value = 'Ligar'; } } function handleSocketSend(valor){ Socket.send(valor); } window.onload = function(event){ startWebSocket(); } function toggleCheckbox(x) { let H_Bridge_Handle = 0; console.log(x); switch(x){ case 'forward': H_Bridge_Handle = 1; break; case 'left': H_Bridge_Handle = 2; break; case 'right': H_Bridge_Handle = 3; break; case 'backward': H_Bridge_Handle = 4; break; default: H_Bridge_Handle = 0; break; } handleSocketSend(H_Bridge_Handle); } </script> </body> </html>";
 
 void H_bridge_handle(int value){
   if (active_H_bridge == 1){
@@ -55,8 +59,8 @@ void H_bridge_handle(int value){
       digitalWrite(IN2,LOW);
       digitalWrite(IN3,LOW);
       digitalWrite(IN4,HIGH);
-      analogWrite(ENA,PWM_MED);
-      analogWrite(ENB,PWM_MED);
+      ledcWrite(0,PWM_MED);
+      ledcWrite(1,PWM_MED);
       break;
     case 2:
       //Esquerda
@@ -64,8 +68,8 @@ void H_bridge_handle(int value){
       digitalWrite(IN2,HIGH);
       digitalWrite(IN3,LOW);
       digitalWrite(IN4,HIGH);
-      analogWrite(ENA,PWM_LOW);
-      analogWrite(ENB,PWM_LOW);
+      ledcWrite(0,PWM_LOW);
+      ledcWrite(1,PWM_LOW);
       break;
     case 3:
       //Direita
@@ -73,8 +77,8 @@ void H_bridge_handle(int value){
       digitalWrite(IN2,LOW);
       digitalWrite(IN3,HIGH);
       digitalWrite(IN4,LOW);
-      analogWrite(ENA,PWM_LOW);
-      analogWrite(ENB,PWM_LOW);
+      ledcWrite(0,PWM_LOW);
+      ledcWrite(1,PWM_LOW);
       break;
     case 4:
       //Trás
@@ -82,20 +86,20 @@ void H_bridge_handle(int value){
       digitalWrite(IN2,HIGH);
       digitalWrite(IN3,HIGH);
       digitalWrite(IN4,LOW);
-      analogWrite(ENA,PWM_MED);
-      analogWrite(ENB,PWM_MED);
+      ledcWrite(0,PWM_MED);
+      ledcWrite(1,PWM_MED);
       break;
     }
     //Configura o PWM
-  //ledcWrite(0, PWM_HIGH);
-  //ledcWrite(1, PWM_HIGH);
-}
-else{
-  digitalWrite(IN1,LOW);
-  digitalWrite(IN2,LOW);
-  digitalWrite(IN3,LOW);
-  digitalWrite(IN4,LOW);
-}
+  // ledcWrite(0, PWM_HIGH);
+  // ledcWrite(1, PWM_HIGH);
+  }
+  else{
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,LOW);
+    digitalWrite(IN3,LOW);
+    digitalWrite(IN4,LOW);
+  }
 }
 
 void Line_sensor_handle(){
@@ -120,11 +124,11 @@ void Line_sensor_handle(){
   // Serial.println((handle));
   H_bridge_handle(handle);
 }
-void Blink(){
-  digitalWrite(LED_BUILTIN,HIGH);
-  delay(200);
-  digitalWrite(LED_BUILTIN,LOW);
-  delay(200);
+void Blink(int vezes, int tempo){
+  for(int i = 0; i < 2*vezes; i++){
+    changeStatus();
+    delay(tempo/(2*vezes));
+  }
 }
 
 void LED_select(){
@@ -164,39 +168,36 @@ void LED_select(){
     if (LEDvalues[1]-LEDvalues[0] > 150){
       Serial.println("Vermelho!");
       H_bridge_handle(0);
-      Blink();
+      Blink(1,300);
     }
     if (LEDvalues[2]-LEDvalues[0]> 200){
       Serial.println("Verde!");
       H_bridge_handle(0);
-      Blink();
-      Blink();
+      Blink(2,300);
     }
     if (LEDvalues[3]-LEDvalues[0] > 120){
       Serial.println("Azul!");
       H_bridge_handle(0);
-      Blink();
-      Blink();
-      Blink();
+      Blink(3,300);
     }
     Serial.println("-------------------------");
 }
 //Funcao para simbolizar o status do led
 void changeStatus(){
-  StatusLED = !StatusLED;
-  digitalWrite(LED,StatusLED);
-  RelayOutput();
+  autonomous_control = !autonomous_control;
+  digitalWrite(LED,autonomous_control);
+  BroadcastStatus();
 }
 void statusHigh(){
-  StatusLED = HIGH;
-  digitalWrite(LED,StatusLED);
-  RelayOutput();
+  autonomous_control = HIGH;
+  digitalWrite(LED,autonomous_control);
+  BroadcastStatus();
 }
 
 void statusLow(){
-  StatusLED = LOW;
-  digitalWrite(LED,StatusLED);
-  RelayOutput();
+  autonomous_control = LOW;
+  digitalWrite(LED,autonomous_control);
+  BroadcastStatus();
 }
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length){
   switch(type){
@@ -226,16 +227,15 @@ void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length){
         BroadcastStatus();
       }
       else{
-        anguloServo = resposta.toInt();
-        meuServo.write(anguloServo); 
-        agora = millis();
+        H_bridge_broadcast_value = resposta.toInt();
+        H_bridge_handle(H_bridge_broadcast_value);
       }
       break;
   }
 }
 void BroadcastStatus(){
       String str = "";
-      switch(StatusLED){
+      switch(autonomous_control){
         case HIGH:
         str = "Ligado";
         break;
@@ -244,7 +244,7 @@ void BroadcastStatus(){
         break;
       }
       //Colocar o angulo do servo para o broadcast
-      str += ";"+ String(anguloServo);
+      str += ";"+ String(H_bridge_broadcast_value);
       int str_len = str.length()+1;
       char char_arr[str_len];
       str.toCharArray(char_arr,str_len);
@@ -253,6 +253,8 @@ void BroadcastStatus(){
 void setup() {
   // put your setup code here, to run once:
   //Configurar as saidas
+  pinMode(LED,OUTPUT);
+  digitalWrite(LED,LOW);
   pinMode(LED_R,OUTPUT);
   digitalWrite(LED_R,LOW);
   pinMode(LED_G,OUTPUT);
@@ -270,12 +272,12 @@ void setup() {
   //pinMode(CALIB_G,INPUT_PULLUP);
   //pinMode(CALIB_B,INPUT_PULLUP);
   //Configuracao do PWM para os motores
-  //ledcAttachPin(ENA, 0);
-  //ledcAttachPin(ENB, 1);
-  //ledcSetup(0, PWM_FREQ, 8);
-  //ledcSetup(1, PWM_FREQ, 8);
+  ledcAttachPin(ENA, 0);
+  ledcAttachPin(ENB, 1);
+  ledcSetup(0, PWM_FREQ, 8);
+  ledcSetup(1, PWM_FREQ, 8);
   //Configuracao da serial
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Starting...");
   Serial.println("-------------------------");
   
@@ -290,7 +292,7 @@ void setup() {
   Serial.println(WiFi.softAPIP());
 
   //Para conectar a um roteador
-  //WiFi.begin(SSID_REDE,SENHA_REDE);  
+  // WiFi.begin(SSID_REDE,SENHA_REDE);  
   // Serial.print("Conectando...");
   //   while(WiFi.status() != WL_CONNECTED){
   //     Serial.print('.');
@@ -316,8 +318,13 @@ void loop() {
   // put your main code here, to run repeatedly:
   //if ((digitalRead(BURST_BTN) != state)&&(digitalRead(BURST_BTN) == LOW))
   //state = digitalRead(BURST_BTN);
-  Line_sensor_handle();
+  if(autonomous_control){
+    Line_sensor_handle();
   //LED_select();
+  }
+  else{
+    H_bridge_handle(H_bridge_broadcast_value);
+  }
   // if (Serial.available() > 0){
   //   String read = Serial.readStringUntil('\n');
   //   Serial.println("ECHO: "+ read);
