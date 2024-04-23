@@ -149,9 +149,9 @@
             <div class = 'spacer'></div>
 	    <div class = 'btntable'>            
 	    	<table>
-      			<tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('forward');" ontouchstart="toggleCheckbox('forward');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Forward</button></td></tr>
-      			<tr><td align="center"><button class="button" onmousedown="toggleCheckbox('left');" ontouchstart="toggleCheckbox('left');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Left</button></td><td align="center"><button class="button" onmousedown="toggleCheckbox('stop');" ontouchstart="toggleCheckbox('stop');">Stop</button></td><td align="center"><button class="button" onmousedown="toggleCheckbox('right');" ontouchstart="toggleCheckbox('right');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Right</button></td></tr>
-      			<tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('backward');" ontouchstart="toggleCheckbox('backward');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Backward</button></td></tr>                   
+      			<tr><td colspan='3' align='center'><button class='button' id='fwbtn'>Forward</button></td></tr>
+      			<tr><td align='center'><button class='button' id='leftbtn'>Left</button></td><td align='center'><button class='button' id='stopbtn'>Stop</button></td><td align='center'><button class='button' id='rightbtn'>Right</button></td></tr>
+      			<tr><td colspan='3' align='center'><button class='button' id='bkwdbtn'>Backward</button></td></tr>                   
     	    	</table>
 	    </div>
 
@@ -162,9 +162,36 @@
 
         <script>
             var Socket;
-            var botao = document.getElementById('powerbtn');
-            
+            var botao = document.getElementById('powerbtn');            
             botao.addEventListener('click', powerChanged);
+
+            var fwrdbtn = document.getElementById('fwbtn');
+            fwrdbtn.addEventListener('onmousedown',function(){toggleCheckbox('forward');});
+            fwrdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('forward');});
+            fwrdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
+            fwrdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+
+            var leftbtn = document.getElementById('leftbtn');
+            leftbtn.addEventListener('onmousedown',function(){toggleCheckbox('left');});
+            leftbtn.addEventListener('ontouchstart',function(){toggleCheckbox('left');});
+            leftbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
+            leftbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+
+            var stopbtn = document.getElementById('leftbtn');
+            stopbtn.addEventListener('onmousedown',function(){toggleCheckbox('stop');});
+            stopbtn.addEventListener('ontouchstart',function(){toggleCheckbox('stop');});
+
+            var rightbtn = document.getElementById('rightbtn');
+            rightbtn.addEventListener('onmousedown',function(){toggleCheckbox('right');});
+            rightbtn.addEventListener('ontouchstart',function(){toggleCheckbox('right');});
+            rightbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
+            rightbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+
+            var bkwdbtn = document.getElementById('bkwdbtn');
+            bkwdbtn.addEventListener('onmousedown',function(){toggleCheckbox('backward');});
+            bkwdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('backward');});
+            bkwdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
+            bkwdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
             
             function startWebSocket(){
                 Socket = new WebSocket('ws://'+window.location.hostname+':81/');
@@ -216,8 +243,29 @@
             function toggleCheckbox(x) {
                 let H_Bridge_Handle = 0;
                 console.log(x);
+                switch(x){
+                    case 'forward':
+                        H_Bridge_Handle = 1;
+                    break;
 
-                handleSocketSend(angulo.value);
+                    case 'left':
+                        H_Bridge_Handle = 2;
+                    break;
+
+                    case 'right':
+                        H_Bridge_Handle = 3;
+                    break;
+
+                    case 'backward':
+                        H_Bridge_Handle = 4;
+                    break;
+
+                    default:
+                        H_Bridge_Handle = 0;
+                    break;
+                }
+
+                handleSocketSend(H_Bridge_Handle);
             }
 
         </script>
