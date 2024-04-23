@@ -8,18 +8,16 @@
 #define LED_G 18
 #define LED_B 19
 #define LDR 32
-#define SNSRL 13
-#define SNSRR 12
 #define MOTOR_UPTIME 100
 #define DUTY_CYCLE  10
-#define IN1 14
-#define IN2 27
+#define IN1 27
+#define IN2 26
 #define IN3 25
-#define IN4 25
-#define ENA 33
-#define ENB 32
-#define SNSRL 34
-#define SNSRR 35
+#define IN4 33
+#define ENA 12
+#define ENB 13
+#define SNSRL 35
+#define SNSRR 34
 #define PWM_HIGH  150
 #define PWM_LOW 50
 #define PWM_MED 80
@@ -41,7 +39,7 @@ IPAddress subnet(255,255,255,0);
 WebServer server(80);
 WebSocketsServer Socket = WebSocketsServer(81);
 
-static String PROGMEM INDEX_HTML = "<!DOCTYPE html> <html> <head> <title>ESP 32 CONTROL SYSTEM</title> <style type='text/CSS'> #header{ background-color: #2f4468; border-radius: 10px; padding: 5px; width: 100%; overflow: hidden; height: 20%; } .titulo{ font-family: Brush Script MT, Brush Script Std, cursive; text-align: center; font-size: 30px; /*color: #c9a959;*/ color: white; } body{ background-color: #f4f2ef; background-size: 100% 100%; overflow: hidden; } .wrapper{ width: 80%; padding: 5%; /*display: grid; grid-template-columns: 70% 30%;*/ margin: auto; } #powerbtn{ border-radius: 5px; text-shadow: 5px; border: 0px; padding-top: 10px; padding-bottom: 10px; font-size: 15px; width: 100%; height: 10em; } .OFF{ background-color: #2f4468; color: white; } .OFF:hover{ background-color: #e4850f; } .ON{ background-color: #e4850f; color: white; } .center{ display: flex; justify-content: center; align-items: center; height: 100%; /*border: 3px solid green;*/ } .slidecontainer { position: absolute; width: 100%; /* Width of the outside container */ } .slider { -webkit-appearance: none; appearance: none; width: 80%; height: 10em; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s; } .slider:hover { opacity: 1; } .slider::-webkit-slider-thumb{ -webkit-appearance: none; appearance: none; width: 20em; height: 20em; border-radius: 50%; background: #2076ac; cursor: pointer; } .spacer{ padding-top: 10%; } .angle{ display: flex; justify-content: center; align-items: center; height: 100%; padding: 2%; font-size: 20px; } .angle { height: 10em; font-size: 20px; } .button { background-color: #2f4468; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 18px; margin: 6px 3px; cursor: pointer; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: rgba(0,0,0,0); } .button:hover{ background-color: #e4850f; } .button:active{ background-color:#0dde26; } .btntable{ display: flex; justify-content: center; } </style> </head> <body> <header id='header'> <div class='titulo'> <h1>Controle</h1> </div> </header> <div class='wrapper'> <div class='center'> <input type='button' value='Ligar' id='powerbtn' class='OFF'> </div> <div class = 'spacer'></div> <div class = 'btntable'> <table> <tr><td colspan='3' align='center'><button class='button' id='fwbtn'>Forward</button></td></tr> <tr><td align='center'><button class='button' id='leftbtn'>Left</button></td><td align='center'><button class='button' id='stopbtn'>Stop</button></td><td align='center'><button class='button' id='rightbtn'>Right</button></td></tr> <tr><td colspan='3' align='center'><button class='button' id='bkwdbtn'>Backward</button></td></tr> </table> </div> </div> <footer> </footer> <script> var Socket; var botao = document.getElementById('powerbtn'); botao.addEventListener('click', powerChanged); var fwrdbtn = document.getElementById('fwbtn'); fwrdbtn.addEventListener('onmousedown',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); fwrdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var leftbtn = document.getElementById('leftbtn'); leftbtn.addEventListener('onmousedown',function(){toggleCheckbox('left');}); leftbtn.addEventListener('ontouchstart',function(){toggleCheckbox('left');}); leftbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); leftbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var stopbtn = document.getElementById('leftbtn'); stopbtn.addEventListener('onmousedown',function(){toggleCheckbox('stop');}); stopbtn.addEventListener('ontouchstart',function(){toggleCheckbox('stop');}); var rightbtn = document.getElementById('rightbtn'); rightbtn.addEventListener('onmousedown',function(){toggleCheckbox('right');}); rightbtn.addEventListener('ontouchstart',function(){toggleCheckbox('right');}); rightbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); rightbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var bkwdbtn = document.getElementById('bkwdbtn'); bkwdbtn.addEventListener('onmousedown',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); bkwdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); function startWebSocket(){ Socket = new WebSocket('ws://'+window.location.hostname+':81/'); Socket.onmessage = function(event){ processarComando(event); } } function processarComando(event) { console.log(event.data); let dados = event.data.split(';'); switch (dados[0]){ case 'Ligado': botao.className = 'ON'; botao.value = 'Desligar'; break; case 'Desligado': botao.className = 'OFF'; botao.value = 'Ligar'; break; } let handleESP32 = dados[1]; console.log(handleESP32); } function powerChanged(){ console.log(botao.value); handleSocketSend(botao.value); if(botao.value == 'Ligar'){ botao.className = 'ON'; botao.value = 'Desligar'; } else{ botao.className = 'OFF'; botao.value = 'Ligar'; } } function handleSocketSend(valor){ Socket.send(valor); } window.onload = function(event){ startWebSocket(); } function toggleCheckbox(x) { let H_Bridge_Handle = 0; console.log(x); switch(x){ case 'forward': H_Bridge_Handle = 1; break; case 'left': H_Bridge_Handle = 2; break; case 'right': H_Bridge_Handle = 3; break; case 'backward': H_Bridge_Handle = 4; break; default: H_Bridge_Handle = 0; break; } handleSocketSend(H_Bridge_Handle); } </script> </body> </html>";
+static String PROGMEM INDEX_HTML = "<!DOCTYPE html> <html> <head> <title>ESP 32 CONTROL SYSTEM</title> <style type='text/CSS'> #header{ background-color: #2f4468; border-radius: 10px; padding: 5px; width: 100%; overflow: hidden; height: 20%; } .titulo{ font-family: Brush Script MT, Brush Script Std, cursive; text-align: center; font-size: 30px; /*color: #c9a959;*/ color: white; } body{ background-color: #f4f2ef; background-size: 100% 100%; overflow: hidden; } .wrapper{ width: 80%; padding: 5%; /*display: grid; grid-template-columns: 70% 30%;*/ margin: auto; } #powerbtn{ border-radius: 5px; text-shadow: 5px; border: 0px; padding-top: 10px; padding-bottom: 10px; font-size: 15px; width: 100%; height: 10em; } .OFF{ background-color: #2f4468; color: white; } .OFF:hover{ background-color: #e4850f; } .ON{ background-color: #e4850f; color: white; } .center{ display: flex; justify-content: center; align-items: center; height: 100%; /*border: 3px solid green;*/ } .slidecontainer { position: absolute; width: 100%; /* Width of the outside container */ } .slider { -webkit-appearance: none; appearance: none; width: 80%; height: 10em; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s; } .slider:hover { opacity: 1; } .slider::-webkit-slider-thumb{ -webkit-appearance: none; appearance: none; width: 20em; height: 20em; border-radius: 50%; background: #2076ac; cursor: pointer; } .spacer{ padding-top: 10%; } .angle{ display: flex; justify-content: center; align-items: center; height: 100%; padding: 2%; font-size: 20px; } .angle { height: 10em; font-size: 20px; } .button { background-color: #2f4468; border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 18px; margin: 6px 3px; cursor: pointer; -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-tap-highlight-color: rgba(0,0,0,0); } .button:hover{ background-color: #e4850f; } .button:active{ background-color:#0dde26; } .btntable{ display: flex; justify-content: center; } </style> </head> <body> <header id='header'> <div class='titulo'> <h1>Controle</h1> </div> </header> <div class='wrapper'> <div class='center'> <input type='button' value='Ligar' id='powerbtn' class='OFF'> </div> <div class = 'spacer'></div> <div class = 'btntable'> <table> <tr><td colspan='3' align='center'><button class='button' id='fwbtn'>Forward</button></td></tr> <tr><td align='center'><button class='button' id='leftbtn'>Left</button></td><td align='center'><button class='button' id='stopbtn'>Stop</button></td><td align='center'><button class='button' id='rightbtn'>Right</button></td></tr> <tr><td colspan='3' align='center'><button class='button' id='bkwdbtn'>Backward</button></td></tr> </table> </div> </div> <footer> </footer> <script> var Socket; var botao = document.getElementById('powerbtn'); botao.addEventListener('click', powerChanged); var fwrdbtn = document.getElementById('fwbtn'); fwrdbtn.addEventListener('onmousedown',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('forward');}); fwrdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); fwrdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var leftbtn = document.getElementById('leftbtn'); leftbtn.addEventListener('onmousedown',function(){toggleCheckbox('left');}); leftbtn.addEventListener('ontouchstart',function(){toggleCheckbox('left');}); leftbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); leftbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var stopbtn = document.getElementById('leftbtn'); stopbtn.addEventListener('onmousedown',function(){toggleCheckbox('stop');}); stopbtn.addEventListener('ontouchstart',function(){toggleCheckbox('stop');}); var rightbtn = document.getElementById('rightbtn'); rightbtn.addEventListener('onmousedown',function(){toggleCheckbox('right');}); rightbtn.addEventListener('ontouchstart',function(){toggleCheckbox('right');}); rightbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); rightbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); var bkwdbtn = document.getElementById('bkwdbtn'); bkwdbtn.addEventListener('onmousedown',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('backward');}); bkwdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');}); bkwdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');}); function startWebSocket(){ Socket = new WebSocket('ws://'+window.location.hostname+':81/'); Socket.onmessage = function(event){ processarComando(event); } }; function processarComando(event) { console.log(event.data); let dados = event.data.split(';'); switch (dados[0]){ case 'Ligado': botao.className = 'ON'; botao.value = 'Desligar'; break; case 'Desligado': botao.className = 'OFF'; botao.value = 'Ligar'; break; } let handleESP32 = dados[1]; console.log(handleESP32); }; function powerChanged(){ console.log(botao.value); handleSocketSend(botao.value); if(botao.value == 'Ligar'){ botao.className = 'ON'; botao.value = 'Desligar'; } else{ botao.className = 'OFF'; botao.value = 'Ligar'; } }; function handleSocketSend(valor){ Socket.send(valor); }; window.onload = function(event){ startWebSocket(); }; function toggleCheckbox(x) { let H_Bridge_Handle = 0; console.log(x); switch(x){ case 'forward': H_Bridge_Handle = 1; break; case 'left': H_Bridge_Handle = 2; break; case 'right': H_Bridge_Handle = 3; break; case 'backward': H_Bridge_Handle = 4; break; default: H_Bridge_Handle = 0; break; }; handleSocketSend(H_Bridge_Handle); }; </script> </body> </html>";
 
 void H_bridge_handle(int value){
   if (active_H_bridge == 1){
@@ -200,6 +198,8 @@ void statusLow(){
   BroadcastStatus();
 }
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length){
+  Serial.println("SOCKET CONNECTION");
+  Serial.println("Type:"+type);
   switch(type){
     case WStype_DISCONNECTED:
       Serial.println("Cliente desconectado");
@@ -228,6 +228,7 @@ void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length){
       }
       else{
         H_bridge_broadcast_value = resposta.toInt();
+        Serial.println(H_bridge_broadcast_value);
         H_bridge_handle(H_bridge_broadcast_value);
       }
       break;
@@ -278,6 +279,7 @@ void setup() {
   ledcSetup(1, PWM_FREQ, 8);
   //Configuracao da serial
   Serial.begin(115200);
+  Serial.println();
   Serial.println("Starting...");
   Serial.println("-------------------------");
   
@@ -312,12 +314,16 @@ void setup() {
   server.begin();
   Socket.begin();
   Socket.onEvent(webSocketEvent);
+  delay(1000);
+  statusHigh();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   //if ((digitalRead(BURST_BTN) != state)&&(digitalRead(BURST_BTN) == LOW))
   //state = digitalRead(BURST_BTN);
+  server.handleClient();
+  Socket.loop();
   if(autonomous_control){
     Line_sensor_handle();
   //LED_select();

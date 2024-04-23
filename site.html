@@ -166,39 +166,39 @@
             botao.addEventListener('click', powerChanged);
 
             var fwrdbtn = document.getElementById('fwbtn');
-            fwrdbtn.addEventListener('onmousedown',function(){toggleCheckbox('forward');});
-            fwrdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('forward');});
-            fwrdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
-            fwrdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+            fwrdbtn.addEventListener('mousedown',function(){toggleCheckbox('forward');});
+            fwrdbtn.addEventListener('touchstart',function(){toggleCheckbox('forward');});
+            fwrdbtn.addEventListener('mouseup',function(){toggleCheckbox('stop');});
+            fwrdbtn.addEventListener('touchend',function(){toggleCheckbox('stop');});
 
             var leftbtn = document.getElementById('leftbtn');
-            leftbtn.addEventListener('onmousedown',function(){toggleCheckbox('left');});
-            leftbtn.addEventListener('ontouchstart',function(){toggleCheckbox('left');});
-            leftbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
-            leftbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+            leftbtn.addEventListener('mousedown',function(){toggleCheckbox('left');});
+            leftbtn.addEventListener('touchstart',function(){toggleCheckbox('left');});
+            leftbtn.addEventListener('mouseup',function(){toggleCheckbox('stop');});
+            leftbtn.addEventListener('touchend',function(){toggleCheckbox('stop');});
 
-            var stopbtn = document.getElementById('leftbtn');
-            stopbtn.addEventListener('onmousedown',function(){toggleCheckbox('stop');});
-            stopbtn.addEventListener('ontouchstart',function(){toggleCheckbox('stop');});
+            var stopbtn = document.getElementById('stopbtn');
+            stopbtn.addEventListener('mousedown',function(){toggleCheckbox('stop');});
+            stopbtn.addEventListener('touchstart',function(){toggleCheckbox('stop');});
 
             var rightbtn = document.getElementById('rightbtn');
-            rightbtn.addEventListener('onmousedown',function(){toggleCheckbox('right');});
-            rightbtn.addEventListener('ontouchstart',function(){toggleCheckbox('right');});
-            rightbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
-            rightbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+            rightbtn.addEventListener('mousedown',function(){toggleCheckbox('right');});
+            rightbtn.addEventListener('touchstart',function(){toggleCheckbox('right');});
+            rightbtn.addEventListener('mouseup',function(){toggleCheckbox('stop');});
+            rightbtn.addEventListener('touchend',function(){toggleCheckbox('stop');});
 
             var bkwdbtn = document.getElementById('bkwdbtn');
-            bkwdbtn.addEventListener('onmousedown',function(){toggleCheckbox('backward');});
-            bkwdbtn.addEventListener('ontouchstart',function(){toggleCheckbox('backward');});
-            bkwdbtn.addEventListener('onmouseup',function(){toggleCheckbox('stop');});
-            bkwdbtn.addEventListener('ontouchend',function(){toggleCheckbox('stop');});
+            bkwdbtn.addEventListener('mousedown',function(){toggleCheckbox('backward');});
+            bkwdbtn.addEventListener('touchstart',function(){toggleCheckbox('backward');});
+            bkwdbtn.addEventListener('mouseup',function(){toggleCheckbox('stop');});
+            bkwdbtn.addEventListener('touchend',function(){toggleCheckbox('stop');});
             
             function startWebSocket(){
                 Socket = new WebSocket('ws://'+window.location.hostname+':81/');
                 Socket.onmessage = function(event){
                     processarComando(event);
                 }
-            }
+            };
 
             function processarComando(event) {
                 console.log(event.data);
@@ -215,7 +215,7 @@
                 }
                 let handleESP32 = dados[1];
                 console.log(handleESP32);
-            }
+            };
 
             function powerChanged(){
                 console.log(botao.value);
@@ -230,15 +230,15 @@
                     botao.value = 'Ligar';
                 }
                 
-            }
+            };
 
             function handleSocketSend(valor){
                 Socket.send(valor);
-            }
+            };
 
             window.onload = function(event){
                 startWebSocket();
-            }
+            };
             
             function toggleCheckbox(x) {
                 let H_Bridge_Handle = 0;
@@ -263,10 +263,10 @@
                     default:
                         H_Bridge_Handle = 0;
                     break;
-                }
+                };
 
                 handleSocketSend(H_Bridge_Handle);
-            }
+            };
 
         </script>
 
