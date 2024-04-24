@@ -199,7 +199,6 @@ void statusLow(){
 }
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length){
   Serial.println("SOCKET CONNECTION");
-  Serial.println("Type:"+type);
   switch(type){
     case WStype_DISCONNECTED:
       Serial.println("Cliente desconectado");
@@ -262,6 +261,14 @@ void setup() {
   digitalWrite(LED_G,LOW);
   pinMode(LED_B,OUTPUT);
   digitalWrite(LED_B,LOW);
+  pinMode(IN1,OUTPUT);
+  digitalWrite(IN1,LOW);
+  pinMode(IN2,OUTPUT);
+  digitalWrite(IN2,LOW);
+  pinMode(IN3,OUTPUT);
+  digitalWrite(IN3,LOW);
+  pinMode(IN4,OUTPUT);
+  digitalWrite(IN4,LOW);
   pinMode(ENA,OUTPUT);
   pinMode(ENB,OUTPUT);
   //Configurar as entradas
