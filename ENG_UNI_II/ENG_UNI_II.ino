@@ -21,7 +21,7 @@
 #define PWM_HIGH  150
 #define PWM_LOW 50
 #define PWM_MED 80
-#define PWM_FREQ  980
+#define PWM_FREQ  490
 #define SSID_REDE  "Marcos_001"
 #define SENHA_REDE  "Segredo123"
 
